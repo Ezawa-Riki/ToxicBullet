@@ -19,13 +19,13 @@ namespace ToxicBullet
         public override string Name { get; init; } = "ToxicBullet";
         public override string Author { get; init; } = "Massivesoft";
         public override List<string>? Contributors { get; init; }
-        public override SemanticVersioning.Version Version { get; init; } = new("1.0.0");
+        public override SemanticVersioning.Version Version { get; init; } = new("1.0.1");
         public override SemanticVersioning.Range SptVersion { get; init; } = new("~4.0.0");
 
 
         public override List<string>? Incompatibilities { get; init; }
         public override Dictionary<string, SemanticVersioning.Range>? ModDependencies { get; init; } = new Dictionary<string, SemanticVersioning.Range>{
-            { "com.massivesoft.massivesoftcore", new SemanticVersioning.Range(">=1.0.0") }
+            { "com.massivesoft.massivesoftcore", new SemanticVersioning.Range(">=1.0.2") }
         };
         public override string? Url { get; init; }
         public override bool? IsBundleMod { get; init; } = true;
@@ -105,35 +105,6 @@ namespace ToxicBullet
             massivesoftCoreClass.AddBuffs(Buffs);
 
             return Task.CompletedTask;
-        }
-        public async Task LoadBundlesAsync(string pathBundle)
-        {
-            await bundleHashCacheService.HydrateCache();
-
-            var modPath = Path.GetRelativePath(Directory.GetCurrentDirectory(), pathBundle);
-
-            var modBundles = await jsonUtil.DeserializeFromFileAsync<BundleManifest>(
-                Path.Join(pathBundle, "bundles.json")
-            );
-
-            var bundleManifests = modBundles?.Manifest ?? [];
-
-            foreach (var bundleManifest in bundleManifests)
-            {
-                var relativeModPath = modPath.Replace('\\', '/');
-
-                var bundleLocalPath = Path.Join(relativeModPath, "bundles", bundleManifest.Key).Replace('\\', '/');
-
-                if (!File.Exists(bundleLocalPath))
-                {
-                    logger.Warning($"Could not find bundle {bundleManifest.Key}");
-                    continue;
-                }
-
-                var bundleHash = await bundleHashCacheService.CalculateMatchAndStoreHash(bundleLocalPath);
-
-                bundleLoader.AddBundle(bundleManifest.Key, new BundleInfo(relativeModPath, bundleManifest, bundleHash));
-            }
         }
     }
 }
